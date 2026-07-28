@@ -64,9 +64,9 @@ const FALLBACK_DATA = {
   },
   law: {
     items: [
-      { source: '人民日报', title: '高空抛物没砸到人也违法吗？', summary: '湖北宜昌长阳县人民法院审结一起因高空抛物引发的纠纷。法院认为，从高空抛掷物品，如果存在危害他人人身安全、公私财产安全或者公共安全危险的，无论是否造成实际损害，均属于违法。', url: 'https://society.people.com.cn/n1/2026/0727/c1008-40768248.html', legalAnalysis: { law: '《民法典》第1254条、《治安管理处罚法》', analysis: '从建筑物抛掷物品，无论是否造成实际损害，只要存在危害他人或公共安全危险的，即属违法；情节严重的还可能承担刑事责任。' } },
-      { source: '光明日报', title: '最高法：判断外卖小哥与平台是否存在劳动关系，要看是否存在支配性劳动管理', summary: '最高人民法院发布新就业形态劳动争议专题指导性案例，明确平台企业与新就业形态劳动者之间的劳动关系认定规则。', url: 'https://m.gmw.cn/gmsogh/202412/23/37754327.html', legalAnalysis: { law: '《劳动法》及最高法指导性案例', analysis: '判断劳动关系应抓住本质特征，即是否存在支配性劳动管理；不能仅因签订承揽协议或注册为个体工商户就否定劳动关系。' } },
-      { source: '中国青年报', title: '严惩行业“内鬼”泄露个人信息', summary: '最高人民法院发布依法惩治侵犯公民个人信息犯罪典型案例，加强对行业“内鬼”泄露个人信息等违法犯罪行为的惩处力度。', url: 'https://zqb.cyol.com/pc/content/202605/09/content_425561.html', legalAnalysis: { law: '《个人信息保护法》第66条、第70条', analysis: '违反国家规定出售或提供公民个人信息，情节严重的构成犯罪；行业“内鬼”利用职务便利泄露信息的应依法从重处罚。' } },
+      { source: '人民日报', title: '高空抛物没砸到人也违法吗？', summary: '湖北宜昌长阳县人民法院审结一起因高空抛物引发的纠纷。法院认为，从高空抛掷物品，如果存在危害他人人身安全、公私财产安全或者公共安全危险的，无论是否造成实际损害，均属于违法。', url: 'https://www.baidu.com/s?wd=' + encodeURIComponent('高空抛物没砸到人也违法吗？'), legalAnalysis: { law: '《民法典》第1254条、《治安管理处罚法》', analysis: '从建筑物抛掷物品，无论是否造成实际损害，只要存在危害他人或公共安全危险的，即属违法；情节严重的还可能承担刑事责任。' } },
+      { source: '光明日报', title: '最高法：判断外卖小哥与平台是否存在劳动关系，要看是否存在支配性劳动管理', summary: '最高人民法院发布新就业形态劳动争议专题指导性案例，明确平台企业与新就业形态劳动者之间的劳动关系认定规则。', url: 'https://www.baidu.com/s?wd=' + encodeURIComponent('最高法：判断外卖小哥与平台是否存在劳动关系，要看是否存在支配性劳动管理'), legalAnalysis: { law: '《劳动法》及最高法指导性案例', analysis: '判断劳动关系应抓住本质特征，即是否存在支配性劳动管理；不能仅因签订承揽协议或注册为个体工商户就否定劳动关系。' } },
+      { source: '中国青年报', title: '严惩行业"内鬼"泄露个人信息', summary: '最高人民法院发布依法惩治侵犯公民个人信息犯罪典型案例，加强对行业"内鬼"泄露个人信息等违法犯罪行为的惩处力度。', url: 'https://www.baidu.com/s?wd=' + encodeURIComponent('严惩行业"内鬼"泄露个人信息'), legalAnalysis: { law: '《个人信息保护法》第66条、第70条', analysis: '违反国家规定出售或提供公民个人信息，情节严重的构成犯罪；行业"内鬼"利用职务便利泄露信息的应依法从重处罚。' } },
     ],
   },
   geography: {
@@ -1128,6 +1128,13 @@ async function fetchLaw() {
     const resp = await fetch('/api/law');
     if (!resp.ok) throw new Error('API unavailable');
     const data = await resp.json();
+    // 把所有法律文章链接统一改为百度搜索链接，确保手机端可打开
+    if (data && data.items) {
+      data.items = data.items.map(item => ({
+        ...item,
+        url: baiduSearchUrl(item.title),
+      }));
+    }
     state.data.law = data;
     renderLaw(data);
   } catch (err) {
@@ -1303,7 +1310,7 @@ function renderLaw(data) {
           <div class="law-analysis-text">${item.legalAnalysis.analysis || item.legalAnalysis}</div>
         </div>
       ` : ''}
-      ${item.url && item.url !== '#' ? `<a href="${item.url}" target="_blank" rel="noopener" class="article-link">阅读原文 ›</a>` : ''}
+      ${item.url && item.url !== '#' ? `<a href="${item.url}" target="_blank" rel="noopener" class="article-link">搜索阅读原文 ›</a>` : ''}
     </div>
   `).join('');
 }
