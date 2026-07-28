@@ -78,7 +78,7 @@ const FALLBACK_DATA = {
     },
     pastRecommendations: [
       { date: '07-27', title: '天山，被打穿了？！', url: 'https://www.163.com/dy/article/KHN14MHV0524A2BA.html', source: '星球研究所' },
-      { date: '07-26', title: '中国国家地理：探索中国最美景观', url: 'https://www.cng.com.cn/', source: '中国地理' },
+      { date: '07-26', title: '哪座城市，压轴2025？', url: 'https://www.163.com/dy/article/KHS5S82H0524A2BA.html', source: '星球研究所' },
     ],
   },
   podcast: {
@@ -1137,17 +1137,92 @@ async function fetchLaw() {
   }
 }
 
+// 检查URL是否为不稳定链接（微信公众号、搜狗等会过期的链接）
+function isUnstableUrl(url) {
+  if (!url || url === '#') return true;
+  const unstablePatterns = ['weixin.sogou.com', 'mp.weixin.qq.com', 'sogou.com/link'];
+  return unstablePatterns.some(p => url.includes(p));
+}
+
+// 从种子文章池中按日期选取稳定的地理文章
+function getStableGeographyData() {
+  const stableArticles = [
+    { source: '中国国家地理中文网', title: '新疆尉犁：盐碱与富饶共生的土地', summary: '新疆尉犁县是继罗布泊之后，塔里木盆地一个新的汇盐区。这里有大面积的盐渍化土地，却呈现盐碱与富饶共生的和谐景象。', url: 'https://www.dili360.com/cng/article/p649272519b00187.htm' },
+    { source: '中国国家地理中文网', title: '走棱线：变"左手荒漠，右手昆仑"为现实', summary: '沿国道315线新疆段徒步棱线，南侧是皑皑雪峰，北侧是漫漫黄沙，体验中国地势第一、二级阶梯分界线两侧的极致景观。', url: 'https://www.dili360.com/cng/article/p58087f9e2d46e48.htm' },
+    { source: '中国国家地理中文网', title: '天山把另一半美给了吉尔吉斯斯坦', summary: '天山的主体在我国新疆境内，但天山的另一半美却在中亚。漫长的国境线阻隔了我们对完整天山的认知。', url: 'https://www.dili360.com/cng/article/p5e691d8ac843a72.htm' },
+    { source: '中国国家地理中文网', title: '穿越喜马拉雅南麓的林海——寻找神秘的"喜山小熊猫"', summary: '2024年至2025年，一支考察队深入喜马拉雅南麓森林，成功拍摄到目前国内最清晰的喜马拉雅小熊猫野外影像之一。', url: 'https://www.dili360.com/cng/article/p694cf0a7c6b3934.htm' },
+    { source: '中国国家地理中文网', title: '中国国家地理2026年03期', summary: '东北是中国自然省最密集的地方；极致洞穴奇景惊艳亮相；柴达木盆地的泉——超乎想象的地质奇观。', url: 'https://www.dili360.com/cng/mag/detail/1003.htm' },
+    { source: '星球研究所', title: '天山，被打穿了？！', summary: '用时5年，这条前所未有的天山大通道诞生了。星球研究所联合中国交建、极氪001推出科普视频，见证天山大通道的诞生。', url: 'https://www.163.com/dy/article/KHN14MHV0524A2BA.html' },
+    { source: '星球研究所', title: '4000年，等一个永不到来的黎明', summary: '最沉重的孤独，是用四千年的时光等待一个永不到来的黎明。黄土之下，他们的生命被永远定格在破晓之前。', url: 'https://www.163.com/dy/article/KCUKTVO00524A2BA.html' },
+    { source: '星球研究所', title: '哪座城市，压轴2025？', summary: '星球研究所花费159天、推翻36版大纲，试图解答石家庄这座城市的秘密。', url: 'https://www.163.com/dy/article/KHS5S82H0524A2BA.html' },
+    { source: '星球研究所', title: '星球研究所官方B站视频', summary: '在B站观看星球研究所的地理科普视频，内容精美、讲解深入。', url: 'https://space.bilibili.com/1007850336/video' },
+    { source: '中国地理', title: '中国国家地理：探索中国最美景观', summary: '中国国家地理官方网站，探索中国壮丽的自然景观和深厚的人文底蕴。', url: 'https://www.cng.com.cn/' },
+    { source: '中国地理', title: '中国国家地理：地理新闻与资讯', summary: '中国国家地理网提供最新的地理新闻、科考动态和自然人文报道。', url: 'https://www.cng.com.cn/news/' },
+    { source: '中国地理', title: '黑龙江是中国极光观测第一省', summary: '黑龙江省有北纬43°至53°的广袤地域，其最北点漠河较新疆阿勒泰更偏北约5个纬度，是中国极光观测的最佳省份。', url: 'https://www.dili360.com/cng/mag/detail/1001.htm' },
+  ];
+
+  // 按日期种子选取，确保每天不同但稳定
+  const today = new Date();
+  const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+  const featuredIdx = dayOfYear % stableArticles.length;
+
+  // 往期推荐：选取另外两篇
+  const pastIndices = [];
+  for (let i = 1; i <= 2; i++) {
+    pastIndices.push((featuredIdx + i * 3) % stableArticles.length);
+  }
+
+  const featured = stableArticles[featuredIdx];
+  const past = pastIndices.map((idx, i) => {
+    const a = stableArticles[idx];
+    const d = new Date();
+    d.setDate(d.getDate() - (i + 1));
+    return {
+      source: a.source,
+      date: `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
+      title: a.title,
+      url: a.url,
+    };
+  });
+
+  return { featured: { ...featured, date: `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}` }, pastRecommendations: past };
+}
+
 async function fetchGeography() {
   try {
     const resp = await fetch('/api/geography');
     if (!resp.ok) throw new Error('API unavailable');
     const data = await resp.json();
+
+    // 检查API返回的URL是否为不稳定链接
+    // 如果是，使用本地稳定数据替代
+    if (isUnstableUrl(data.featured && data.featured.url)) {
+      const stableData = getStableGeographyData();
+      state.data.geography = stableData;
+      renderGeography(stableData);
+      return;
+    }
+
+    // 过滤往期推荐中的不稳定链接
+    if (data.pastRecommendations) {
+      data.pastRecommendations = data.pastRecommendations.map(p => {
+        if (isUnstableUrl(p.url)) {
+          // 用稳定数据替换
+          const stable = getStableGeographyData();
+          const stablePast = stable.pastRecommendations.find(sp => sp.title !== p.title);
+          return stablePast || p;
+        }
+        return p;
+      });
+    }
+
     state.data.geography = data;
     renderGeography(data);
   } catch (err) {
-    // 降级：使用内置数据
-    state.data.geography = FALLBACK_DATA.geography;
-    renderGeography(FALLBACK_DATA.geography);
+    // 降级：使用本地稳定数据
+    const stableData = getStableGeographyData();
+    state.data.geography = stableData;
+    renderGeography(stableData);
   }
 }
 
