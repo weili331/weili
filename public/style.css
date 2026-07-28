@@ -436,6 +436,40 @@ body {
   font-weight: 700;
 }
 
+/* 通用勾选状态（用于组标题和子目） */
+.task-checkbox.checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.task-checkbox.checked::after {
+  content: '✓';
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* 子目复选框稍小 */
+.sub-item .task-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.sub-item .task-checkbox.checked::after {
+  font-size: 11px;
+}
+
+/* 子目完成状态文字 */
+.sub-item.sub-done .sub-item-name {
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+}
+
 .task-content { flex: 1; min-width: 0; }
 .task-name { font-size: 15px; font-weight: 500; }
 .task-item.done .task-name { color: var(--text-tertiary); text-decoration: line-through; }
