@@ -71,13 +71,15 @@ const FALLBACK_DATA = {
   },
   geography: {
     featured: {
-      source: '星球研究所', title: '横断山脉：中国最极致的地理走廊',
-      summary: '从青藏高原边缘到云贵高原，横断山脉用三江并流的奇观，书写了地球上最壮丽的地理篇章。',
-      url: 'https://weixin.sogou.com/weixin?type=2&query=星球研究所',
+      source: '中国国家地理',
+      title: '出发G331！北境寻秋3000里',
+      summary: '一条超级边境走廊，横跨四个时区，纵越寒温带、中温带与暖温带。在吉林段331国道绵延1314公里，串联长白山、三江流域与中朝边境线，是一首浪漫的秋日史诗。',
+      url: 'https://news.qq.com/rain/a/20250909A06PEM00',
     },
     pastRecommendations: [
-      { date: '07-25', title: '塔克拉玛干沙漠的绿色奇迹', url: '#', source: '中国地理' },
-      { date: '07-24', title: '黄河三角洲：候鸟的最终驿站', url: '#', source: '星球研究所' },
+      { date: '07-27', title: '天山，被打穿了？！', url: 'https://www.163.com/dy/article/KHN14MHV0524A2BA.html', source: '星球研究所' },
+      { date: '07-26', title: '2025十大自然地理热点事件盘点', url: 'https://www.163.com/dy/article/KHNLDAPL0512VPKM.html', source: '侠客地理' },
+      { date: '07-25', title: '中国国家地理2026年03期：东北是中国自然省最密集的地方', url: 'https://www.dili360.com/cng/mag/detail/1003.htm', source: '中国国家地理中文网' },
     ],
   },
   podcast: {
@@ -195,11 +197,14 @@ function getAllTaskIds() {
   const ids = [];
   for (const cat of Object.keys(allTasks)) {
     for (const t of allTasks[cat]) {
+      ids.push(t.id);
       if (t.type === 'group') {
-        // 组本身的勾选 + 子项也算
-        ids.push(t.id);
-      } else {
-        ids.push(t.id);
+        const defaultSubs = t.subItems || [];
+        const customSubs = getCustomSubItems(t.id);
+        const allSubs = [...defaultSubs, ...customSubs];
+        for (const s of allSubs) {
+          ids.push(s.id);
+        }
       }
     }
   }
@@ -236,12 +241,71 @@ function toggleTask(taskId) {
   updateTaskCounter();
 }
 
+function toggleSubItem(subId) {
+  state.tasks[subId] = !state.tasks[subId];
+  saveTasks();
+  renderTasks();
+  updateTaskCounter();
+}
+
 function getCompletedCount() {
   return getAllTaskIds().filter(id => state.tasks[id]).length;
 }
 
 function getTotalCount() {
   return getAllTaskIds().length;
+}
+
+// ===== 图片压缩工具 =====
+function compressImage(file, maxWidth = 1280, quality = 0.7) {
+  return new Promise((resolve) => {
+    if (!file || !file.type.startsWith('image/')) {
+      resolve(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        let w = img.width;
+        let h = img.height;
+        if (w > maxWidth) {
+          h = Math.round(h * maxWidth / w);
+          w = maxWidth;
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const compressed = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressed);
+      };
+      img.onerror = () => resolve(e.target.result);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+}
+
+function viewImage(src) {
+  let lightbox = document.getElementById('lightbox');
+  if (!lightbox) {
+    lightbox = document.createElement('div');
+    lightbox.id = 'lightbox';
+    lightbox.className = 'lightbox';
+    lightbox.innerHTML = '<img id="lightbox-img" src="" alt="预览"><button class="lightbox-close" onclick="closeLightbox()">✕</button>';
+    document.body.appendChild(lightbox);
+    lightbox.addEventListener('click', closeLightbox);
+  }
+  document.getElementById('lightbox-img').src = src;
+  lightbox.classList.add('active');
+}
+
+function closeLightbox() {
+  const lightbox = document.getElementById('lightbox');
+  if (lightbox) lightbox.classList.remove('active');
 }
 
 // ===== 日期工具 =====
@@ -366,22 +430,24 @@ function renderTaskGroup(t, category) {
         <span class="task-group-arrow">›</span>
       </div>
       <div class="task-group-body">
-        ${allSubs.map(s => `
-          <div class="sub-item">
+        ${allSubs.map(s => {
+          const subDone = state.tasks[s.id];
+          return `
+          <div class="sub-item ${subDone ? 'sub-done' : ''}">
+            <div class="task-checkbox ${subDone ? 'checked' : ''}" onclick="event.stopPropagation(); toggleSubItem('${s.id}')"></div>
             ${s.url
               ? `<a href="${s.url}" target="_blank" rel="noopener" class="sub-item-link">
-                   <span class="sub-item-icon">🎬</span>
                    <span class="sub-item-name">${s.name}</span>
                    <span class="sub-item-arrow">›</span>
                  </a>`
               : `<div class="sub-item-link">
-                   <span class="sub-item-icon">📌</span>
                    <span class="sub-item-name">${s.name}</span>
                  </div>`
             }
             ${s.custom ? `<button class="sub-item-delete" onclick="event.stopPropagation(); deleteSubItem('${t.id}', '${s.id}', event)">✕</button>` : ''}
           </div>
-        `).join('')}
+          `;
+        }).join('')}
         <button class="add-sub-btn" onclick="openAddSubItemModal('${t.id}')">
           <span>＋</span> 添加小子目
         </button>
@@ -520,12 +586,20 @@ function renderCustomImages(pageId) {
   const grid = document.getElementById(`custom-images-${pageId}`);
   if (!grid) return;
 
-  grid.innerHTML = (content.images || []).map((img, idx) => `
+  const images = content.images || [];
+  grid.innerHTML = images.map((img, idx) => `
     <div class="review-image-item">
-      <img src="${img}" alt="图片${idx+1}">
-      <button class="review-image-delete" onclick="deleteCustomImage('${pageId}', ${idx})">✕</button>
+      <img src="${img}" alt="图片${idx+1}" data-img-idx="${idx}" class="review-clickable-img">
+      <button class="review-image-delete" onclick="event.stopPropagation(); deleteCustomImage('${pageId}', ${idx})">✕</button>
     </div>
   `).join('');
+
+  // 事件委托：点击图片预览
+  grid.querySelectorAll('.review-clickable-img').forEach(el => {
+    el.addEventListener('click', function() {
+      viewImage(images[parseInt(this.dataset.imgIdx)]);
+    });
+  });
 }
 
 function saveCustomPageText(pageId) {
@@ -536,7 +610,7 @@ function saveCustomPageText(pageId) {
   saveCustomData(data);
 }
 
-function handleCustomImageUpload(event, pageId) {
+async function handleCustomImageUpload(event, pageId) {
   const files = event.target.files;
   if (!files || files.length === 0) return;
 
@@ -545,20 +619,14 @@ function handleCustomImageUpload(event, pageId) {
   if (!data.navPages[pageId]) data.navPages[pageId] = { text: '', images: [] };
   if (!data.navPages[pageId].images) data.navPages[pageId].images = [];
 
-  let processed = 0;
-  Array.from(files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      data.navPages[pageId].images.push(e.target.result);
-      processed++;
-      if (processed === files.length) {
-        saveCustomData(data);
-        renderCustomImages(pageId);
-        showToast('图片上传成功');
-      }
-    };
-    reader.readAsDataURL(file);
-  });
+  showToast('正在处理图片...');
+  for (const file of Array.from(files)) {
+    const compressed = await compressImage(file, 1280, 0.7);
+    if (compressed) data.navPages[pageId].images.push(compressed);
+  }
+  saveCustomData(data);
+  renderCustomImages(pageId);
+  showToast(`已添加 ${files.length} 张图片`);
   event.target.value = '';
 }
 
@@ -714,13 +782,20 @@ function renderReviewImages(images) {
 
   grid.innerHTML = images.map((img, idx) => `
     <div class="review-image-item">
-      <img src="${img}" alt="复盘图片${idx+1}">
-      <button class="review-image-delete" onclick="deleteReviewImage(${idx})">✕</button>
+      <img src="${img}" alt="复盘图片${idx+1}" data-img-idx="${idx}" class="review-clickable-img">
+      <button class="review-image-delete" onclick="event.stopPropagation(); deleteReviewImage(${idx})">✕</button>
     </div>
   `).join('');
+
+  // 事件委托：点击图片预览（避免 base64 放在 inline onclick 中出错）
+  grid.querySelectorAll('.review-clickable-img').forEach(el => {
+    el.addEventListener('click', function() {
+      viewImage(images[parseInt(this.dataset.imgIdx)]);
+    });
+  });
 }
 
-function handleReviewImageUpload(event) {
+async function handleReviewImageUpload(event) {
   const files = event.target.files;
   if (!files || files.length === 0) return;
 
@@ -728,20 +803,14 @@ function handleReviewImageUpload(event) {
   if (!data.reviewDraft) data.reviewDraft = { text: '', images: [] };
   if (!data.reviewDraft.images) data.reviewDraft.images = [];
 
-  let processed = 0;
-  Array.from(files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      data.reviewDraft.images.push(e.target.result);
-      processed++;
-      if (processed === files.length) {
-        saveCustomData(data);
-        renderReviewImages(data.reviewDraft.images);
-        showToast('图片上传成功');
-      }
-    };
-    reader.readAsDataURL(file);
-  });
+  showToast('正在处理图片...');
+  for (const file of Array.from(files)) {
+    const compressed = await compressImage(file, 1280, 0.7);
+    if (compressed) data.reviewDraft.images.push(compressed);
+  }
+  saveCustomData(data);
+  renderReviewImages(data.reviewDraft.images);
+  showToast(`已添加 ${files.length} 张图片`);
   event.target.value = '';
 }
 
@@ -795,10 +864,10 @@ function renderReviewHistory(entries) {
     return;
   }
 
-  list.innerHTML = entries.map(entry => {
+  list.innerHTML = entries.map((entry, entryIdx) => {
     const d = new Date(entry.date);
     const dateStr = formatReviewDate(d);
-    const imgsHtml = (entry.images || []).map(img => `<img src="${img}" alt="复盘图片" class="review-history-img">`).join('');
+    const imgsHtml = (entry.images || []).map((img, imgIdx) => `<img src="${img}" alt="复盘图片" class="review-history-img" data-entry-idx="${entryIdx}" data-img-idx="${imgIdx}">`).join('');
     const textHtml = entry.text ? `<div class="review-history-text">${escapeHtml(entry.text)}</div>` : '';
     const imgsSection = imgsHtml ? `<div class="review-history-images">${imgsHtml}</div>` : '';
 
@@ -813,6 +882,16 @@ function renderReviewHistory(entries) {
       </div>
     `;
   }).join('');
+
+  // 事件委托：点击往期图片预览
+  list.querySelectorAll('.review-history-img').forEach(el => {
+    el.addEventListener('click', function() {
+      const eIdx = parseInt(this.dataset.entryIdx);
+      const iIdx = parseInt(this.dataset.imgIdx);
+      const img = entries[eIdx] && entries[eIdx].images && entries[eIdx].images[iIdx];
+      if (img) viewImage(img);
+    });
+  });
 }
 
 function deleteReviewEntry(id) {
