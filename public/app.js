@@ -71,15 +71,14 @@ const FALLBACK_DATA = {
   },
   geography: {
     featured: {
-      source: '中国国家地理',
-      title: '出发G331！北境寻秋3000里',
-      summary: '一条超级边境走廊，横跨四个时区，纵越寒温带、中温带与暖温带。在吉林段331国道绵延1314公里，串联长白山、三江流域与中朝边境线，是一首浪漫的秋日史诗。',
-      url: 'https://news.qq.com/rain/a/20250909A06PEM00',
+      source: '中国国家地理中文网',
+      title: '新疆尉犁：盐碱与富饶共生的土地',
+      summary: '新疆尉犁县是继罗布泊之后，塔里木盆地一个新的汇盐区。这里有大面积的盐渍化土地，却呈现盐碱与富饶共生的和谐景象。',
+      url: 'https://www.dili360.com/cng/article/p649272519b00187.htm',
     },
     pastRecommendations: [
       { date: '07-27', title: '天山，被打穿了？！', url: 'https://www.163.com/dy/article/KHN14MHV0524A2BA.html', source: '星球研究所' },
-      { date: '07-26', title: '2025十大自然地理热点事件盘点', url: 'https://www.163.com/dy/article/KHNLDAPL0512VPKM.html', source: '侠客地理' },
-      { date: '07-25', title: '中国国家地理2026年03期：东北是中国自然省最密集的地方', url: 'https://www.dili360.com/cng/mag/detail/1003.htm', source: '中国国家地理中文网' },
+      { date: '07-26', title: '中国国家地理：探索中国最美景观', url: 'https://www.cng.com.cn/', source: '中国地理' },
     ],
   },
   podcast: {
