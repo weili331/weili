@@ -1,6 +1,7 @@
 /**
  * 法学服务 - 每日从人民日报/光明新闻/解放日报/新华日报/中国青年报
  * 随机选取3篇社会热点并生成法律解析
+ * 文章链接统一使用百度搜索链接，确保移动端稳定可打开
  * 每日 0:00 更新，不与昨天重复
  */
 const cheerio = require('cheerio');
@@ -8,6 +9,13 @@ const { fetchText } = require('../utils/fetcher');
 const legalAnalyzer = require('../utils/legalAnalyzer');
 const config = require('../config');
 const db = require('../db');
+
+/**
+ * 生成百度搜索链接（永远可用）
+ */
+function searchUrl(title) {
+  return 'https://www.baidu.com/s?wd=' + encodeURIComponent(title);
+}
 
 /**
  * 采集人民日报当日文章
@@ -267,7 +275,7 @@ async function collect() {
   // 生成法律解析
   const withAnalysis = legalAnalyzer.analyzeBatch(selected);
 
-  // 格式化输出
+  // 格式化输出（URL统一改为百度搜索链接，避免原网站链接失效或打不开）
   return withAnalysis.map((item, idx) => ({
     id: idx + 1,
     source: item.source || '人民日报',
@@ -275,12 +283,13 @@ async function collect() {
     title: item.title,
     summary: item.summary || '',
     legalAnalysis: item.legalAnalysis,
-    url: item.url || '#',
+    url: searchUrl(item.title),
   }));
 }
 
 /**
  * 种子数据（采集失败时的后备）
+ * 不存储具体URL，由collect()统一生成百度搜索链接
  */
 function getSeedData() {
   return [
@@ -288,63 +297,53 @@ function getSeedData() {
       source: '人民日报',
       title: '高空抛物没砸到人也违法吗？',
       summary: '湖北宜昌长阳县人民法院审结一起因高空抛物引发的纠纷。法院认为，从高空抛掷物品，如果存在危害他人人身安全、公私财产安全或者公共安全危险的，无论是否造成实际损害，均属于违法。',
-      url: 'https://society.people.com.cn/n1/2026/0727/c1008-40768248.html',
     },
     {
       source: '光明新闻',
       title: '最高法：判断外卖小哥与平台是否存在劳动关系，要看是否存在支配性劳动管理',
       summary: '最高人民法院发布新就业形态劳动争议专题指导性案例，明确平台企业与新就业形态劳动者之间的劳动关系认定规则。',
-      url: 'https://m.gmw.cn/gmsogh/202412/23/37754327.html',
     },
     {
       source: '解放日报',
       title: '公告｜《上海市数据条例（草案）》公开征求意见',
       summary: '上海市人大常委会就《上海市数据条例（草案）》公开征求意见，为城市数字化转型提供基础性制度保障。',
-      url: 'https://sghexport.shobserver.com/html/toutiao/2021/09/30/551784.html',
     },
     {
       source: '新华日报',
       title: '26万条个人信息“直通黑市”，这家公司竟把转卖客户数据当“KPI”',
       summary: '宿迁经开区人民法院审理一起网络店铺非法出售公民个人信息案，提醒网络平台加强商家管理，保护好消费者个人信息。',
-      url: 'https://www.xhby.net/content/s69d62179e4b0639de44f55ca.html',
     },
     {
       source: '中国青年报',
       title: '严惩行业“内鬼”泄露个人信息',
       summary: '最高人民法院发布依法惩治侵犯公民个人信息犯罪典型案例，加强对行业“内鬼”泄露个人信息等违法犯罪行为的惩处力度。',
-      url: 'https://zqb.cyol.com/pc/content/202605/09/content_425561.html',
     },
     {
       source: '人民日报',
       title: '民法典让“高空抛物”无所遁形',
       summary: '民法典针对高空抛物做出明确规定，禁止从建筑物中抛掷物品，物业服务企业未采取安全保障措施的应承担相应责任。',
-      url: 'https://www.peopleapp.com/rmharticle/30019618105',
     },
     {
       source: '光明新闻',
       title: '骑手参保，探路灵活就业者权益保障',
       summary: '国家层面对新就业形态用工关系作出清晰区分，探索政府、平台和个人多方参与的灵活就业者社保保障模式。',
-      url: 'https://news.gmw.cn/2025-12/30/content_38507464.htm',
     },
     {
       source: '解放日报',
       title: '《上海市促进浦东新区数据流通交易若干规定（草案）》征求民意',
       summary: '上海就促进浦东新区数据流通交易若干规定草案征求民意，探索数据产权分置机制和交易规则。',
-      url: 'https://export.shobserver.com/toutiao/html/636514.html',
     },
     {
       source: '新华日报',
       title: '倒卖12万条个人信息！检察办案揭秘网贷公司背后的黑产',
       summary: '涉案公司因倒卖个人信息被判处高额罚金和公益损害赔偿，并被判决删除非法获取的公民个人信息。',
-      url: 'https://www.xhby.net/content/s66f5473ce4b019ce5659f0a9.html',
     },
     {
       source: '中国青年报',
       title: '冒用客户信息办居住证 链家及员工被判赔偿十万元',
       summary: '链家公司及员工因冒用客户信息办理居住证被判公开赔礼道歉并连带赔偿10万元，反映企业信息保管漏洞。',
-      url: 'https://zqb.cyol.com/html/2018-11/21/nw.D110000zgqnb_20181121_7-01.htm',
     },
   ];
 }
 
-module.exports = { collect, getSeedData };
+module.exports = { collect, getSeedData, searchUrl };
