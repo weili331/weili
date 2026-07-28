@@ -1,7 +1,7 @@
 // weili App Service Worker
 // 提供离线缓存和App安装支持
 
-const CACHE_NAME = 'weili-v9';
+const CACHE_NAME = 'weili-v10';
 const ASSETS = [
   './',
   './index.html',
