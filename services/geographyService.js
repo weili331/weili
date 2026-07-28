@@ -5,39 +5,63 @@
  */
 const cheerio = require('cheerio');
 const { fetchText } = require('../utils/fetcher');
-const config = require('../config');
 const db = require('../db');
 
+// 稳定数据源配置（不会过期的官方页面）
+const SOURCE_PAGES = {
+  '中国国家地理中文网': {
+    home: 'https://www.dili360.com/',
+    list: 'https://www.dili360.com/article/',
+    selector: '.article-list .item h3 a, .list-item h3 a, .article-item a',
+    baseUrl: 'https://www.dili360.com',
+  },
+  '星球研究所': {
+    home: 'https://space.bilibili.com/1007850336/',
+    list: 'https://space.bilibili.com/1007850336/video',
+    selector: '', // B站页面动态加载，较难直接解析，使用种子数据
+    baseUrl: '',
+  },
+  '中国地理': {
+    home: 'https://www.cng.com.cn/',
+    list: 'https://www.cng.com.cn/news/',
+    selector: '.news-list h3 a, .article-list h3 a, .list h3 a',
+    baseUrl: 'https://www.cng.com.cn',
+  },
+};
+
 /**
- * 从搜狗微信搜索采集文章
+ * 从官方网站文章列表采集
  */
-async function fetchFromSogou(sourceName) {
+async function fetchFromOfficial(sourceName) {
+  const cfg = SOURCE_PAGES[sourceName];
+  if (!cfg) return [];
+
   try {
-    const url = `https://weixin.sogou.com/weixin?type=2&query=${encodeURIComponent(sourceName + ' 地理')}`;
-    const html = await fetchText(url);
+    const html = await fetchText(cfg.list || cfg.home);
     const $ = cheerio.load(html);
-
     const articles = [];
-    $('.news-box .news-list li, .results .news-list li').each((_, el) => {
-      const titleEl = $(el).find('h3 a, .txt-box h3 a').first();
-      const title = titleEl.text().trim();
-      const link = titleEl.attr('href');
-      const summary = $(el).find('.txt-info, p.txt-info').text().trim();
-      const account = $(el).find('.account, .s-p .account').text().trim();
 
-      if (title && title.length > 4) {
-        articles.push({
-          title,
-          summary: summary.slice(0, 120),
-          source: account || sourceName,
-          url: link ? (link.startsWith('http') ? link : 'https://weixin.sogou.com' + link) : '#',
-        });
-      }
-    });
+    if (cfg.selector) {
+      $(cfg.selector).each((_, el) => {
+        const title = $(el).text().trim();
+        let link = $(el).attr('href') || '';
+        if (link && !link.startsWith('http') && cfg.baseUrl) {
+          link = cfg.baseUrl + (link.startsWith('/') ? '' : '/') + link;
+        }
+        if (title && title.length > 4) {
+          articles.push({
+            title,
+            summary: '',
+            source: sourceName,
+            url: link || cfg.home,
+          });
+        }
+      });
+    }
 
     return articles;
   } catch (err) {
-    console.error(`[geoService] 搜狗搜索 ${sourceName} 失败:`, err.message);
+    console.error(`[geoService] 官网采集 ${sourceName} 失败:`, err.message);
     return [];
   }
 }
@@ -49,8 +73,7 @@ async function fetchFromSogou(sourceName) {
 async function collect() {
   console.log('[geoService] 开始采集地理文章...');
 
-  const sources = config.SOURCES.geography.sources;
-  const sourceNames = sources.map(s => s.name);
+  const sourceNames = Object.keys(SOURCE_PAGES);
 
   // 获取昨天的数据，避免使用昨天的源
   const yesterdayData = db.getYesterdayData('geography');
@@ -72,16 +95,13 @@ async function collect() {
   const todaySource = availableSources[Math.floor(Math.random() * availableSources.length)];
   console.log(`[geoService] 今日数据源: ${todaySource} (昨天: ${yesterdaySource || '无'})`);
 
-  let articles = await fetchFromSogou(todaySource);
+  let articles = await fetchFromOfficial(todaySource);
 
-  // 如果采集失败，使用种子数据
-  if (articles.length === 0) {
-    console.log('[geoService] 采集失败，使用种子数据');
-    articles = getSeedArticles().filter(a => sourceNames.includes(a.source));
-    // 如果种子数据中也没有匹配的源，使用全部种子数据
-    if (articles.length === 0) {
-      articles = getSeedArticles();
-    }
+  // 如果采集失败或数量不足，使用种子数据
+  if (articles.length < 2) {
+    console.log('[geoService] 官网采集不足，使用种子数据');
+    const seed = getSeedArticles().filter(a => a.source === todaySource || todaySource.includes(a.source) || a.source.includes(todaySource));
+    articles = seed.length >= 2 ? seed : getSeedArticles();
   }
 
   // 确保不与昨天的文章重复
@@ -95,9 +115,10 @@ async function collect() {
   }
 
   // 往期推荐（第2-3篇）
-  const past = articles.slice(1, 3).length >= 2
-    ? articles.slice(1, 3)
-    : getSeedArticles().slice(1, 3);
+  const remaining = articles.filter(a => a.title !== featured.title);
+  const past = remaining.slice(0, 2).length >= 2
+    ? remaining.slice(0, 2)
+    : getSeedArticles().filter(a => a.title !== featured.title).slice(0, 2);
 
   return {
     featured: {
@@ -123,45 +144,45 @@ function getPastDate(daysAgo) {
 }
 
 /**
- * 种子文章数据
+ * 种子文章数据 - 使用稳定官方链接，不会过期
  */
 function getSeedArticles() {
   return [
     {
-      title: '横断山脉：中国最极致的地理走廊',
-      summary: '从青藏高原边缘到云贵高原，横断山脉用三江并流的奇观，书写了地球上最壮丽的地理篇章。',
+      title: '出发G331！北境寻秋3000里',
+      summary: '一条超级边境走廊，横跨四个时区，纵越寒温带、中温带与暖温带。在吉林段331国道绵延1314公里，串联长白山、三江流域与中朝边境线。',
+      source: '中国国家地理',
+      url: 'https://news.qq.com/rain/a/20250909A06PEM00',
+    },
+    {
+      title: '2025十大自然地理热点事件盘点',
+      summary: '从西藏墨脱莲花瀑布刷新世界纪录，到贵州4.8亿年地下水晶宫，再到缅甸7.9级地震——2025年地球上的震撼印记。',
+      source: '侠客地理',
+      url: 'https://www.163.com/dy/article/KHNLDAPL0512VPKM.html',
+    },
+    {
+      title: '天山，被打穿了？！',
+      summary: '用时5年，这条前所未有的天山大通道诞生了。星球研究所联合中国交建、极氪001推出科普视频，见证天山大通道的诞生。',
       source: '星球研究所',
-      url: 'https://weixin.sogou.com/weixin?type=2&query=星球研究所',
+      url: 'https://www.163.com/dy/article/KHN14MHV0524A2BA.html',
     },
     {
-      title: '塔克拉玛干沙漠的绿色奇迹',
-      summary: '中国最大的沙漠正在经历一场前所未有的生态治理，公路沿线的绿色走廊令人惊叹。',
-      source: '中国地理',
-      url: 'https://weixin.sogou.com/weixin?type=2&query=中国地理',
-    },
-    {
-      title: '黄河三角洲：候鸟的最终驿站',
-      summary: '黄河入海口的湿地生态系统，每年为数百万候鸟提供停歇和越冬栖息地。',
+      title: '4000年，等一个永不到来的黎明',
+      summary: '最沉重的孤独，是用四千年的时光等待一个永不到来的黎明。黄土之下，他们的生命被永远定格在破晓之前。',
       source: '星球研究所',
-      url: 'https://weixin.sogou.com/weixin?type=2&query=星球研究所',
+      url: 'https://www.163.com/dy/article/KCUKTVO00524A2BA.html',
     },
     {
-      title: '喀斯特地貌：大自然的雕塑艺术',
-      summary: '从桂林山水到贵州溶洞，喀斯特地貌塑造了中国南方最独特的自然景观。',
+      title: '中国国家地理2026年03期',
+      summary: '东北是中国自然省最密集的地方；极致洞穴奇景惊艳亮相；柴达木盆地的泉——超乎想象的地质奇观。',
       source: '中国国家地理中文网',
-      url: 'https://weixin.sogou.com/weixin?type=2&query=中国国家地理中文网',
+      url: 'https://www.dili360.com/cng/mag/detail/1003.htm',
     },
     {
-      title: '青藏高原冰川退缩：气候变化的警示',
-      summary: '亚洲水塔的冰川正在加速融化，影响着数十亿人的水资源安全。',
-      source: '中国地理',
-      url: 'https://weixin.sogou.com/weixin?type=2&query=中国地理',
-    },
-    {
-      title: '丹霞地貌：大地的调色板',
-      summary: '从广东丹霞山到甘肃张掖，红色砂岩在不同气候条件下呈现出壮观的色彩。',
+      title: '中国国家地理中文网首页',
+      summary: '汇聚大量关于中国自然地理、人文地理的深度文章和精美图片。',
       source: '中国国家地理中文网',
-      url: 'https://weixin.sogou.com/weixin?type=2&query=中国国家地理中文网',
+      url: 'https://www.dili360.com/',
     },
   ];
 }
