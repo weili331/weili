@@ -1,7 +1,7 @@
 // weili App Service Worker
 // 提供离线缓存和App安装支持
 
-const CACHE_NAME = 'weili-v7';
+const CACHE_NAME = 'weili-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -37,33 +37,32 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// 请求拦截：缓存优先，网络降级
+// 请求拦截：网络优先（确保更新及时），降级到缓存
 self.addEventListener('fetch', (event) => {
   // 只处理 GET 请求
   if (event.request.method !== 'GET') return;
 
-  // 跳过外部API请求（不缓存）
+  // 跳过外部请求（不缓存）
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) {
-    return; // 让浏览器正常处理外部请求
+    return;
   }
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      // 缓存命中：返回缓存，同时后台更新
-      const fetchPromise = fetch(event.request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, clone).catch(() => {});
-            });
-          }
-          return response;
-        })
-        .catch(() => cached);
-
-      return cached || fetchPromise;
-    })
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, clone).catch(() => {});
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        return caches.match(event.request).then((cached) => {
+          return cached || new Response('离线模式', { status: 503 });
+        });
+      })
   );
 });
