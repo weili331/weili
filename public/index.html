@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#FFF383">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="weili">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <title>weili</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23FFF383'/><text x='50' y='62' font-size='40' font-weight='bold' fill='white' text-anchor='middle' font-family='Arial'>We</text></svg>">
+</head>
+<body>
+  <div id="app">
+    <!-- 侧栏 -->
+    <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="app-logo">
+          <div class="app-logo-circle">We</div>
+        </div>
+        <span class="app-name" id="sidebar-username">Hi~</span>
+      </div>
+      <nav class="sidebar-nav" id="sidebar-nav">
+        <a class="nav-item" data-page="profile">
+          <span class="nav-icon">👤</span>
+          <span class="nav-label">我的</span>
+        </a>
+        <a class="nav-item active" data-page="today">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">今日</span>
+        </a>
+        <a class="nav-item" data-page="calendar">
+          <span class="nav-icon">📅</span>
+          <span class="nav-label">日历</span>
+        </a>
+        <a class="nav-item" data-page="exercise">
+          <span class="nav-icon">🏃</span>
+          <span class="nav-label">运动</span>
+        </a>
+        <a class="nav-item" data-page="music">
+          <span class="nav-icon">🎵</span>
+          <span class="nav-label">音乐</span>
+        </a>
+        <a class="nav-item" data-page="english">
+          <span class="nav-icon">📖</span>
+          <span class="nav-label">英语学习</span>
+        </a>
+        <a class="nav-item" data-page="geography">
+          <span class="nav-icon">🌍</span>
+          <span class="nav-label">地理文章推荐</span>
+        </a>
+        <a class="nav-item" data-page="law">
+          <span class="nav-icon">⚖️</span>
+          <span class="nav-label">每日法学</span>
+        </a>
+        <a class="nav-item" data-page="podcast">
+          <span class="nav-icon">🎬</span>
+          <span class="nav-label">播客推荐</span>
+        </a>
+        <a class="nav-item" data-page="review">
+          <span class="nav-icon">📝</span>
+          <span class="nav-label">复盘</span>
+        </a>
+        <!-- 自定义导航项由JS动态生成 -->
+      </nav>
+      <div class="sidebar-footer">
+        <button class="add-nav-btn" onclick="openAddNavModal()">
+          <span>＋</span>
+          <span>添加大项</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main id="main-content">
+      <!-- 顶部栏 -->
+      <header class="topbar">
+        <button id="menu-toggle" class="menu-btn">
+          <span class="hamburger"></span>
+        </button>
+        <div class="topbar-title">
+          <div class="topbar-logo">We</div>
+          <span>weili</span>
+        </div>
+      </header>
+
+      <!-- 页面容器 -->
+      <div id="page-container">
+        <!-- 今日页面 -->
+        <div id="page-today" class="page active">
+          <div class="page-header">
+            <h1 class="page-title">今日</h1>
+            <p class="page-date" id="today-date"></p>
+          </div>
+          <div class="task-counter">
+            <div class="counter-circle">
+              <span class="counter-number" id="task-count">0</span>
+              <span class="counter-label">已完成</span>
+            </div>
+            <div class="counter-info">
+              <span class="counter-total">共 <strong id="task-total">0</strong> 项任务</span>
+              <div class="counter-progress">
+                <div class="counter-progress-bar" id="progress-bar"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card-grid" id="today-cards"></div>
+        </div>
+
+        <!-- 日历页面 -->
+        <div id="page-calendar" class="page">
+          <div class="page-header">
+            <h1 class="page-title">日历</h1>
+          </div>
+          <!-- 实时时钟 -->
+          <div class="clock-card" id="clock-display">
+            <div class="clock-time" id="clock-time">--:--:--</div>
+            <div class="clock-date" id="clock-date">----年--月--日 星期-</div>
+          </div>
+          <!-- 月历 -->
+          <div class="calendar-card">
+            <div class="calendar-header">
+              <button class="calendar-nav-btn" onclick="changeMonth(-1)">‹</button>
+              <span class="calendar-title" id="calendar-title">----年--月</span>
+              <button class="calendar-nav-btn" onclick="changeMonth(1)">›</button>
+            </div>
+            <div class="calendar-weekdays">
+              <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid"></div>
+            <button class="calendar-today-btn" onclick="goToToday()">回到今天</button>
+          </div>
+          <!-- 倒计时 -->
+          <div class="countdown-section">
+            <div class="section-label">⏰ 我的倒计时</div>
+            <div class="countdown-list" id="countdown-list"></div>
+            <div class="countdown-add-form" id="countdown-form">
+              <input type="text" id="countdown-name" class="countdown-input" placeholder="倒计时名称（如：考试、生日）" maxlength="20">
+              <input type="date" id="countdown-date" class="countdown-input countdown-date-input">
+              <button class="countdown-add-btn" onclick="addCountdown()">添加</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 运动页面 -->
+        <div id="page-exercise" class="page">
+          <div class="page-header">
+            <h1 class="page-title">运动</h1>
+          </div>
+          <div class="task-list" id="exercise-tasks"></div>
+          <button class="add-item-btn" onclick="openAddTaskModal('exercise')">
+            <span>＋</span> 添加运动项目
+          </button>
+        </div>
+
+        <!-- 音乐页面 -->
+        <div id="page-music" class="page">
+          <div class="page-header">
+            <h1 class="page-title">音乐</h1>
+          </div>
+          <!-- 音乐推荐 -->
+          <div class="section-label">🎵 音乐推荐</div>
+          <div class="content-card" id="music-recommendation-content">
+            <div class="loading">加载中...</div>
+          </div>
+          <!-- 简谱推荐 -->
+          <div class="section-label">🎼 每日简谱</div>
+          <div class="content-card" id="music-content">
+            <div class="loading">加载中...</div>
+          </div>
+        </div>
+
+        <!-- 英语学习页面 -->
+        <div id="page-english" class="page">
+          <div class="page-header">
+            <h1 class="page-title">英语学习</h1>
+          </div>
+          <div class="task-list" id="english-tasks"></div>
+          <div class="external-link-card" id="baicizhan-link">
+            <div class="ext-link" onclick="openBaicizhan()" style="cursor:pointer">
+              <div class="ext-link-icon">📝</div>
+              <div class="ext-link-info">
+                <span class="ext-link-title">背单词</span>
+                <span class="ext-link-desc">跳转至百词斩App</span>
+              </div>
+              <span class="ext-link-arrow">›</span>
+            </div>
+          </div>
+          <button class="add-item-btn" onclick="openAddTaskModal('english')">
+            <span>＋</span> 添加学习项目
+          </button>
+        </div>
+
+        <!-- 地理文章推荐页面 -->
+        <div id="page-geography" class="page">
+          <div class="page-header">
+            <h1 class="page-title">地理文章推荐</h1>
+          </div>
+          <div class="content-card" id="geography-content">
+            <div class="loading">加载中...</div>
+          </div>
+        </div>
+
+        <!-- 每日法学页面 -->
+        <div id="page-law" class="page">
+          <div class="page-header">
+            <h1 class="page-title">每日法学</h1>
+          </div>
+          <div class="content-card" id="law-content">
+            <div class="loading">加载中...</div>
+          </div>
+        </div>
+
+        <!-- 播客推荐页面 -->
+        <div id="page-podcast" class="page">
+          <div class="page-header">
+            <h1 class="page-title">播客推荐</h1>
+          </div>
+          <div class="content-card" id="podcast-content">
+            <div class="loading">加载中...</div>
+          </div>
+        </div>
+
+        <!-- 我的页面 -->
+        <div id="page-profile" class="page">
+          <div class="page-header">
+            <h1 class="page-title">我的</h1>
+          </div>
+          <!-- 好好活着天数 -->
+          <div class="alive-days-card">
+            <div class="alive-days-icon">🌱</div>
+            <div class="alive-days-text">
+              <div class="alive-days-label">好好活着第</div>
+              <div class="alive-days-number" id="alive-days-count">0</div>
+              <div class="alive-days-label">天</div>
+            </div>
+          </div>
+          <div class="profile-card">
+            <div class="profile-avatar-wrap" onclick="document.getElementById('avatar-input').click()">
+              <div class="profile-avatar" id="profile-avatar-display">
+                <span class="avatar-placeholder">点击上传头像</span>
+              </div>
+              <div class="avatar-edit-hint">更换头像</div>
+            </div>
+            <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
+            <div class="profile-name-section">
+              <label class="profile-label">姓名</label>
+              <input type="text" id="profile-name-input" class="profile-name-input" placeholder="点击编辑姓名" maxlength="20">
+            </div>
+            <button class="save-btn" onclick="saveProfile()">保存</button>
+          </div>
+        </div>
+
+        <!-- 复盘页面 -->
+        <div id="page-review" class="page">
+          <div class="page-header">
+            <h1 class="page-title">复盘</h1>
+          </div>
+
+          <!-- 新建复盘 -->
+          <div class="review-card">
+            <label class="profile-label">新建复盘</label>
+            <textarea id="review-text" class="review-textarea" placeholder="写下你的复盘内容..." rows="6"></textarea>
+            <div class="review-images-section">
+              <label class="profile-label">图片记录</label>
+              <div class="review-images-grid" id="review-images-grid"></div>
+              <button class="upload-img-btn" onclick="document.getElementById('review-image-input').click()">
+                <span>📷</span> 从相册上传图片
+              </button>
+              <input type="file" id="review-image-input" accept="image/*" multiple style="display:none" onchange="handleReviewImageUpload(event)">
+            </div>
+            <button class="save-btn" onclick="saveReview()">保存复盘</button>
+          </div>
+
+          <!-- 往期复盘列表 -->
+          <div class="review-history-section">
+            <label class="profile-label" style="font-size:16px;margin-bottom:12px;">往期复盘</label>
+            <div id="review-history-list"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 添加子项弹窗 -->
+  <div id="add-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title">添加项目</span>
+        <button class="modal-close" onclick="closeAddModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <label>名称</label>
+          <input type="text" id="modal-name-input" placeholder="输入名称" maxlength="30">
+        </div>
+        <div class="modal-field" id="modal-url-field">
+          <label>链接（可选，填写后点击可跳转）</label>
+          <input type="url" id="modal-url-input" placeholder="https://...">
+        </div>
+        <div class="modal-field" id="modal-icon-field" style="display:none">
+          <label>图标（输入emoji）</label>
+          <input type="text" id="modal-icon-input" placeholder="📌" maxlength="4">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-cancel" onclick="closeAddModal()">取消</button>
+        <button class="modal-btn modal-confirm" onclick="confirmAdd()">确认添加</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // 注册 Service Worker（PWA支持）
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('sw.js').then(function(reg) {
+          console.log('weili PWA: Service Worker 注册成功');
+        }).catch(function(err) {
+          console.log('weili PWA: Service Worker 注册失败', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
