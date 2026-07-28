@@ -1,0 +1,19 @@
+{
+  "name": "weili-app",
+  "version": "1.0.0",
+  "description": "weili App - 每日学习与生活助手",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.5"
+  }
+}
