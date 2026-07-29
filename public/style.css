@@ -1755,3 +1755,56 @@ body {
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
+
+/* ===== 往期任务记录 ===== */
+.task-history-section {
+  margin-top: 20px;
+  padding: 12px;
+  background: var(--card-bg, #f8f9fa);
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.task-history-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.task-history-item {
+  margin-bottom: 12px;
+  padding: 10px;
+  background: rgba(0,0,0,0.02);
+  border-radius: 8px;
+}
+.task-history-date {
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  margin-bottom: 6px;
+}
+.task-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.task-history-entry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #555;
+  padding: 2px 0;
+}
+.task-history-entry.done .task-history-name {
+  text-decoration: line-through;
+  color: #aaa;
+}
+.task-history-check {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.task-history-name {
+  flex: 1;
+}
