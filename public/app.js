@@ -315,6 +315,11 @@ function getAllTasks() {
   for (const cat of Object.keys(DEFAULT_TASKS)) {
     result[cat] = [...DEFAULT_TASKS[cat], ...getCustomTasks(cat)];
   }
+  // 添加自定义大项页面的任务
+  const customNav = getCustomNav();
+  for (const nav of customNav) {
+    result[nav.id] = getCustomTasks(nav.id);
+  }
   return result;
 }
 
@@ -343,6 +348,10 @@ function loadTasks() {
     const today = todayStr();
     const stored = JSON.parse(localStorage.getItem('weili-tasks') || '{}');
     if (stored.date !== today) {
+      // 日期变化：归档前一天的自定义任务到历史记录
+      if (stored.date && stored.tasks) {
+        archiveYesterdayTasks(stored.date, stored.tasks);
+      }
       state.tasks = {};
       saveTasks();
     } else {
@@ -351,6 +360,109 @@ function loadTasks() {
   } catch {
     state.tasks = {};
   }
+  // 渲染各页面的往期记录
+  renderAllTaskHistory();
+}
+
+// 归档前一天的自定义任务（含完成状态）到历史记录，然后清除自定义任务
+function archiveYesterdayTasks(yesterdayDate, yesterdayTaskState) {
+  const data = loadCustomData();
+  if (!data.taskHistory) data.taskHistory = [];
+
+  // 收集所有自定义任务（含完成状态）
+  const archivedTasks = {};
+  if (data.tasks) {
+    for (const [category, tasks] of Object.entries(data.tasks)) {
+      if (tasks && tasks.length > 0) {
+        archivedTasks[category] = tasks.map(t => ({
+          ...t,
+          completed: !!yesterdayTaskState[t.id],
+        }));
+      }
+    }
+  }
+
+  // 收集自定义子项目
+  const archivedSubItems = {};
+  if (data.subItems) {
+    for (const [parentId, subs] of Object.entries(data.subItems)) {
+      if (subs && subs.length > 0) {
+        archivedSubItems[parentId] = subs.map(s => ({
+          ...s,
+          completed: !!yesterdayTaskState[s.id],
+        }));
+      }
+    }
+  }
+
+  // 只有确实有自定义任务时才归档
+  const hasTasks = Object.keys(archivedTasks).length > 0;
+  const hasSubs = Object.keys(archivedSubItems).length > 0;
+
+  if (hasTasks || hasSubs) {
+    data.taskHistory.unshift({
+      date: yesterdayDate,
+      tasks: archivedTasks,
+      subItems: archivedSubs,
+    });
+    // 只保留最近30条历史
+    if (data.taskHistory.length > 30) data.taskHistory = data.taskHistory.slice(0, 30);
+
+    // 清除自定义任务（默认任务保留在DEFAULT_TASKS中）
+    data.tasks = {};
+    data.subItems = {};
+    saveCustomData(data);
+    console.log(`[archive] 已归档 ${yesterdayDate} 的自定义任务到历史记录`);
+  }
+}
+
+// 渲染所有页面的往期记录
+function renderAllTaskHistory() {
+  renderTaskHistory('exercise-history', 'exercise');
+  renderTaskHistory('english-history', 'english');
+}
+
+// 渲染某个分类的往期记录
+function renderTaskHistory(containerId, category) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const data = loadCustomData();
+  const history = data.taskHistory || [];
+
+  // 过滤出该分类有记录的历史条目
+  const relevant = history.filter(h => {
+    const tasks = (h.tasks && h.tasks[category]) || [];
+    return tasks.length > 0;
+  });
+
+  if (relevant.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="task-history-section">
+      <div class="task-history-title">📅 往期记录</div>
+      ${relevant.map(h => {
+        const tasks = (h.tasks && h.tasks[category]) || [];
+        const completedCount = tasks.filter(t => t.completed).length;
+        return `
+          <div class="task-history-item">
+            <div class="task-history-date">${h.date}（完成 ${completedCount}/${tasks.length}）</div>
+            <div class="task-history-list">
+              ${tasks.map(t => `
+                <div class="task-history-entry ${t.completed ? 'done' : ''}">
+                  <span class="task-history-check">${t.completed ? '✅' : '⬜'}</span>
+                  <span class="task-history-name">${escapeHtml(t.name)}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
 }
 
 function saveTasks() {
@@ -508,6 +620,9 @@ function renderTodayCards() {
 function renderTasks() {
   renderTaskList('exercise-tasks', 'exercise');
   renderTaskList('english-tasks', 'english');
+  renderAllTaskHistory();
+  // 渲染自定义页面的任务列表和历史
+  renderCustomPageTasks();
 }
 
 function renderTaskList(containerId, category) {
@@ -679,6 +794,10 @@ function createCustomPage(pageId) {
   const nav = getCustomNav().find(n => n.id === pageId);
   if (!nav) return;
 
+  // 移除可能已存在的旧页面
+  const existing = document.getElementById(`page-${pageId}`);
+  if (existing) existing.remove();
+
   const pageDiv = document.createElement('div');
   pageDiv.id = `page-${pageId}`;
   pageDiv.className = 'page';
@@ -686,25 +805,32 @@ function createCustomPage(pageId) {
     <div class="page-header">
       <h1 class="page-title">${nav.label}</h1>
     </div>
-    <div class="custom-page-content">
-      <label class="profile-label">内容</label>
-      <textarea class="custom-textarea" id="custom-text-${pageId}" placeholder="写下你的内容..." oninput="saveCustomPageText('${pageId}')"></textarea>
-      <div class="review-images-section">
-        <label class="profile-label">图片</label>
-        <div class="review-images-grid" id="custom-images-${pageId}"></div>
-        <button class="upload-img-btn" onclick="document.getElementById('custom-img-input-${pageId}').click()">
-          <span>📷</span> 上传图片
-        </button>
-        <input type="file" id="custom-img-input-${pageId}" accept="image/*" multiple style="display:none" onchange="handleCustomImageUpload(event, '${pageId}')">
-      </div>
-    </div>
+    <div class="task-list" id="${pageId}-tasks"></div>
+    <button class="add-item-btn" onclick="openAddTaskModal('${pageId}')">
+      <span>＋</span> 添加${nav.label}项目
+    </button>
+    <div id="${pageId}-history"></div>
   `;
   document.getElementById('page-container').appendChild(pageDiv);
 
-  // 加载已有内容
-  const content = getCustomPageContent(pageId);
-  document.getElementById(`custom-text-${pageId}`).value = content.text || '';
-  renderCustomImages(pageId);
+  // 渲染该页面的任务和历史
+  renderTaskList(`${pageId}-tasks`, pageId);
+  renderTaskHistory(`${pageId}-history`, pageId);
+}
+
+// 渲染所有自定义页面的任务列表
+function renderCustomPageTasks() {
+  const customNav = getCustomNav();
+  customNav.forEach(nav => {
+    const container = document.getElementById(`${nav.id}-tasks`);
+    if (container) {
+      renderTaskList(`${nav.id}-tasks`, nav.id);
+    }
+    const historyContainer = document.getElementById(`${nav.id}-history`);
+    if (historyContainer) {
+      renderTaskHistory(`${nav.id}-history`, nav.id);
+    }
+  });
 }
 
 function renderCustomImages(pageId) {
@@ -1050,7 +1176,9 @@ function escapeHtml(str) {
 // ===== 弹窗管理 =====
 function openAddTaskModal(category) {
   state.modalContext = { type: 'task', category };
-  document.getElementById('modal-title').textContent = category === 'exercise' ? '添加运动项目' : '添加学习项目';
+  const titleMap = { exercise: '添加运动项目', english: '添加学习项目' };
+  const navItem = getCustomNav().find(n => n.id === category);
+  document.getElementById('modal-title').textContent = titleMap[category] || (navItem ? `添加${navItem.label}项目` : '添加项目');
   document.getElementById('modal-name-input').value = '';
   document.getElementById('modal-url-input').value = '';
   document.getElementById('modal-url-field').style.display = 'flex';
