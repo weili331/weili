@@ -90,7 +90,7 @@
         <div class="topbar-title">
           <div class="topbar-logo">We</div>
           <span>weili</span>
-          <span class="app-version" style="font-size:10px;color:#999;margin-left:4px;">v2.2</span>
+          <span class="app-version" style="font-size:10px;color:#999;margin-left:4px;">v2.3</span>
         </div>
       </header>
 
@@ -316,7 +316,7 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('sw.js').then(function(reg) {
-          console.log('weili PWA: Service Worker 注册成功 v10');
+          console.log('weili PWA: Service Worker 注册成功 v11');
           // 检测SW更新，有新版本时自动刷新
           reg.addEventListener('updatefound', function() {
             var newWorker = reg.installing;
