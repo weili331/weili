@@ -52,6 +52,64 @@ const MUSIC_VIDEO_POOL = [
   { bvid: 'BV1By7q6UEcq', title: '王铮亮&谭松韵《小半》百万豪装录音棚大声听', cover: 'http://i1.hdslb.com/bfs/archive/f320effa0206aca626fe1e8ae9f3d3ba1596deca.jpg', duration: '05:17', play: 253934 },
 ];
 
+// ===== 法律文章池（30篇，每日随机选3篇，不重复） =====
+const LAW_ARTICLE_POOL = [
+  { source: '人民日报', title: '高空抛物没砸到人也违法吗？', summary: '湖北宜昌长阳县人民法院审结一起因高空抛物引发的纠纷。法院认为，从高空抛掷物品，如果存在危害他人人身安全、公私财产安全或者公共安全危险的，无论是否造成实际损害，均属于违法。', legalAnalysis: { law: '《民法典》第1254条、《治安管理处罚法》', analysis: '从建筑物抛掷物品，无论是否造成实际损害，只要存在危害他人或公共安全危险的，即属违法；情节严重的还可能承担刑事责任。' } },
+  { source: '光明日报', title: '最高法：判断外卖小哥与平台是否存在劳动关系，要看是否存在支配性劳动管理', summary: '最高人民法院发布新就业形态劳动争议专题指导性案例，明确平台企业与新就业形态劳动者之间的劳动关系认定规则。', legalAnalysis: { law: '《劳动法》及最高法指导性案例', analysis: '判断劳动关系应抓住本质特征，即是否存在支配性劳动管理；不能仅因签订承揽协议或注册为个体工商户就否定劳动关系。' } },
+  { source: '中国青年报', title: '严惩行业"内鬼"泄露个人信息', summary: '最高人民法院发布依法惩治侵犯公民个人信息犯罪典型案例，加强对行业"内鬼"泄露个人信息等违法犯罪行为的惩处力度。', legalAnalysis: { law: '《个人信息保护法》第66条、第70条', analysis: '违反国家规定出售或提供公民个人信息，情节严重的构成犯罪；行业"内鬼"利用职务便利泄露信息的应依法从重处罚。' } },
+  { source: '新华日报', title: '26万条个人信息"直通黑市"，公司把转卖客户数据当KPI', summary: '宿迁经开区人民法院审理一起网络店铺非法出售公民个人信息案，提醒网络平台加强商家管理，保护好消费者个人信息。', legalAnalysis: { law: '《刑法》第253条之一 侵犯公民个人信息罪', analysis: '违反国家有关规定，向他人出售或者提供公民个人信息，情节严重的处三年以下有期徒刑；情节特别严重的处三年以上七年以下有期徒刑。' } },
+  { source: '人民日报', title: '民法典让"高空抛物"无所遁形', summary: '民法典针对高空抛物做出明确规定，禁止从建筑物中抛掷物品，物业服务企业未采取安全保障措施的应承担相应责任。', legalAnalysis: { law: '《民法典》第1254条', analysis: '禁止从建筑物中抛掷物品。经调查难以确定具体侵权人的，除能够证明自己不是侵权人的外，由可能加害的建筑物使用人给予补偿。物业服务企业未采取安全保障措施的应依法承担责任。' } },
+  { source: '解放日报', title: '《上海市数据条例》公开征求意见', summary: '上海市人大常委会就《上海市数据条例（草案）》公开征求意见，为城市数字化转型提供基础性制度保障。', legalAnalysis: { law: '《数据安全法》、《个人信息保护法》', analysis: '数据处理活动应当遵守法律法规，尊重社会公德和伦理；收集数据应限于实现处理目的的最小范围；涉及个人信息的须取得个人同意。' } },
+  { source: '光明日报', title: '骑手参保，探路灵活就业者权益保障', summary: '国家层面对新就业形态用工关系作出清晰区分，探索政府、平台和个人多方参与的灵活就业者社保保障模式。', legalAnalysis: { law: '《社会保险法》、《关于维护新就业形态劳动者劳动保障权益的指导意见》', analysis: '平台企业应当规范用工，不得规避用工主体责任；灵活就业人员有权参加基本养老保险和基本医疗保险，平台应予以配合。' } },
+  { source: '中国青年报', title: '冒用客户信息办居住证 链家及员工被判赔偿十万元', summary: '链家公司及员工因冒用客户信息办理居住证被判公开赔礼道歉并连带赔偿10万元，反映企业信息保管漏洞。', legalAnalysis: { law: '《民法典》第111条、第1165条 侵权责任', analysis: '自然人个人信息受法律保护。任何组织或个人需要获取他人个人信息的应当依法取得并确保信息安全；非法使用他人个人信息造成损害的应承担侵权责任。' } },
+  { source: '人民日报', title: '网络直播带货中的消费者权益保护', summary: '随着直播电商快速发展，虚假宣传、假冒伪劣等问题频发。多地市场监管部门加大对直播带货违法行为查处力度。', legalAnalysis: { law: '《消费者权益保护法》第55条、《电子商务法》', analysis: '直播带货中经营者提供商品或服务有欺诈行为的应增加赔偿；电子商务平台对平台内经营者侵害消费者合法权益的行为未采取必要措施的依法承担连带责任。' } },
+  { source: '光明日报', title: '预付卡消费陷阱多 消费者如何维权', summary: '健身房、美容院、教育培训等预付卡消费领域频现"跑路"事件，消费者预存费用后商家关门失联。', legalAnalysis: { law: '《消费者权益保护法》第53条、《单用途商业预付卡管理办法》', analysis: '经营者以预收款方式提供商品或服务的，未按照约定提供的应当按照消费者要求履行约定或退回预付款；发卡企业应按规定进行资金存管。' } },
+  { source: '新华日报', title: '物业公司停电催缴物业费是否合法', summary: '多地发生物业公司以停电停水方式催缴物业费引发纠纷，法院认定物业无权采取断水断电等极端手段。', legalAnalysis: { law: '《民法典》第944条、《物业管理条例》', analysis: '物业服务人不得采取停止供电、供水、供热、供燃气等方式催交物业费；业主逾期不交纳物业费的物业服务人可以催告其在合理期限内交纳，逾期仍不交纳的可提起诉讼或申请仲裁。' } },
+  { source: '中国青年报', title: '校园欺凌的法律责任与预防', summary: '多部门联合发文要求加强中小学生欺凌防治工作，明确学校、家庭和相关部门职责，建立早期预警和事中处理机制。', legalAnalysis: { law: '《未成年人保护法》第39条、《预防未成年人犯罪法》', analysis: '学校应当建立学生欺凌防控工作制度；对实施欺凌的学生学校应根据情节给予纪律处分，情节严重的公安机关可依法予以治安管理处罚或追究刑事责任。' } },
+  { source: '人民日报', title: '网络暴力是否构成犯罪？', summary: '网络暴力事件频发，从造谣传谣到人肉搜索，严重侵害公民人格权益。最高法明确网络暴力可构成诽谤罪、侮辱罪等。', legalAnalysis: { law: '《刑法》第246条 诽谤罪/侮辱罪、《民法典》第1024条', analysis: '以暴力或者其他方法公然侮辱他人或捏造事实诽谤他人情节严重的处三年以下有期徒刑；网络暴力造成他人名誉权损害的应承担民事侵权责任。' } },
+  { source: '光明日报', title: '醉驾入刑十年：危险驾驶罪的适用', summary: '醉驾入刑以来全国查处酒驾醉驾案件数量大幅下降，危险驾驶罪已成为刑事案件中占比最高的罪名之一。', legalAnalysis: { law: '《刑法》第133条之一 危险驾驶罪', analysis: '在道路上醉酒驾驶机动车的处拘役并处罚金；血液酒精含量达到80毫克/100毫升以上的属于醉酒驾驶。醉驾造成交通事故构成其他犯罪的依照处罚较重的规定定罪处罚。' } },
+  { source: '解放日报', title: '正当防卫的认定标准与界限', summary: '多起正当防卫案件引发社会关注，最高法最高检联合发布指导性案例明确正当防卫的适用条件。', legalAnalysis: { law: '《刑法》第20条 正当防卫', analysis: '为了使国家、公共利益、本人或他人的人身、财产和其他权利免受正在进行的不法侵害而采取的制止不法侵害的行为对不法侵害人造成损害的属于正当防卫不负刑事责任；明显超过必要限度造成重大损害的应当负刑事责任但应当减轻或免除处罚。' } },
+  { source: '新华日报', title: '快递丢失损毁 消费者如何索赔', summary: '网购快递在运输过程中丢失损毁事件频发，消费者面临理赔难、赔偿低等问题。', legalAnalysis: { law: '《邮政法》第47条、《电子商务法》第20条', analysis: '快件延误、丢失、损毁或内件短少的经营快递业务的企业应当按照与用户的约定予以赔偿；未约定赔偿标准的按照相关法律规定执行；保价的快件按保价额赔偿。' } },
+  { source: '中国青年报', title: '兼职陷阱：大学生如何识别和防范', summary: '刷单返利、打字员兼职、模特代理等骗局利用大学生求职心切进行诈骗，造成财产损失。', legalAnalysis: { law: '《刑法》第266条 诈骗罪', analysis: '以非法占有为目的用虚构事实或隐瞒真相的方法骗取数额较大的公私财物的处三年以下有期徒刑；刷单本身属于违法行为参与刷单不受法律保护。' } },
+  { source: '人民日报', title: '电子合同的法律效力与签订注意事项', summary: '随着数字经济发展电子合同应用越来越广泛，其法律效力已获法律确认但签订时需注意身份认证和证据保存。', legalAnalysis: { law: '《民法典》第469条、《电子签名法》第14条', analysis: '当事人订立合同可以采用电子数据交换等形式；可靠的电子签名与手写签名或盖章具有同等的法律效力；签订电子合同应注意使用第三方电子签名平台确保签名可靠性。' } },
+  { source: '光明日报', title: '信用卡逾期不还的法律后果', summary: '信用卡透支后长期不还可能面临高额利息、信用记录受损甚至刑事追责，银行有权通过法律途径追讨欠款。', legalAnalysis: { law: '《刑法》第196条 信用卡诈骗罪', analysis: '恶意透支信用卡数额较大的处五年以下有期徒刑；持卡人以非法占有为目的超过规定限额或期限透支经发卡银行两次有效催收后超过三个月仍不归还的属于恶意透支。' } },
+  { source: '新华日报', title: '房贷断供后银行能否直接收回房屋', summary: '经济下行导致部分购房者房贷断供，银行可通过法律程序拍卖抵押房产但须经过法院诉讼程序。', legalAnalysis: { law: '《民法典》第410条 抵押权实现', analysis: '债务人不履行到期债务或者发生当事人约定的实现抵押权的情形抵押权人可以与抵押人协议以抵押财产折价或拍卖变卖该财产所得价款优先受偿；协议不成的抵押权人可以请求人民法院拍卖变卖抵押财产。' } },
+  { source: '中国青年报', title: '知识产权侵权：短视频搬运的法律风险', summary: '未经授权搬运、剪辑他人短视频在网络平台传播可能构成著作权侵权，多起案件判决搬运者赔偿。', legalAnalysis: { law: '《著作权法》第53条、第54条', analysis: '未经著作权人许可复制通过信息网络向公众传播其作品的应当承担停止侵害、消除影响、赔礼道歉、赔偿损失等民事责任；侵权赔偿数额按照权利人实际损失或侵权人违法所得确定。' } },
+  { source: '人民日报', title: '医疗纠纷中患者的权利与维权途径', summary: '医疗纠纷发生后患者可通过协商、调解、诉讼等途径维权，医疗损害鉴定是认定责任的关键环节。', legalAnalysis: { law: '《民法典》第1218条 医疗损害责任', analysis: '患者在诊疗活动中受到损害医疗机构或者其医务人员有过错的由医疗机构承担赔偿责任；患者有损害且医疗机构存在隐匿拒绝提供病历等情形的推定医疗机构有过错。' } },
+  { source: '解放日报', title: '劳动合同到期不续签是否需要赔偿', summary: '劳动合同期满后用人单位不续签或降低条件续签劳动者不同意终止的，用人单位应支付经济补偿。', legalAnalysis: { law: '《劳动合同法》第46条、第47条', analysis: '除用人单位维持或提高劳动合同约定条件续订劳动合同劳动者不同意续订的情形外劳动合同期满终止固定期限劳动合同的用人单位应当向劳动者支付经济补偿；经济补偿按劳动者在本单位工作年限每满一年支付一个月工资。' } },
+  { source: '光明日报', title: '工伤认定的标准与申请时限', summary: '劳动者在工作中受伤后需及时申请工伤认定，认定工伤是获得工伤保险待遇的前提条件。', legalAnalysis: { law: '《工伤保险条例》第14条、第17条', analysis: '职工在工作时间和工作场所内因工作原因受到事故伤害的应当认定为工伤；用人单位应在事故伤害发生之日起30日内提出工伤认定申请，用人单位未按规定提出申请的职工或其直系亲属可在1年内直接提出申请。' } },
+  { source: '新华日报', title: '房屋租赁中租客的权益保护', summary: '租房市场中房东随意涨租、提前收房、不退押金等问题频发，租客应签订书面合同维护自身权益。', legalAnalysis: { law: '《民法典》第725条、第733条', analysis: '租赁物在承租人按照租赁合同占有期限内发生所有权变动的不影响租赁合同的效力；承租人按照约定的方法或根据租赁物的性质使用租赁物致使租赁物受到损耗的不承担赔偿责任。' } },
+  { source: '中国青年报', title: '未成年人网络打赏能否追回', summary: '未成年人在直播平台大额打赏主播引发纠纷，法院多判决平台返还打赏款项。', legalAnalysis: { law: '《民法典》第19条、第145条', analysis: '八周岁以上的未成年人为限制民事行为能力人，实施的纯获利益的民事法律行为或与其年龄智力相适应的民事法律行为有效；其他民事法律行为经法定代理人同意或追认后有效。未成年人未经监护人同意进行大额网络打赏的监护人可以主张追回。' } },
+  { source: '人民日报', title: '环境污染侵权中的举证责任倒置', summary: '环境污染侵权案件适用举证责任倒置规则，污染者需证明其行为与损害结果之间不存在因果关系。', legalAnalysis: { law: '《民法典》第1230条', analysis: '因污染环境破坏生态发生纠纷行为人应当就法律规定的不承担责任或者减轻责任的情形及其行为与损害之间不存在因果关系承担举证责任；这不同于一般侵权纠纷中"谁主张谁举证"的原则。' } },
+  { source: '光明日报', title: '遗产继承：法定继承与遗嘱继承的顺序', summary: '民法典对法定继承人的范围和顺序进行了调整，遗嘱继承优先于法定继承但遗嘱须符合法定要件。', legalAnalysis: { law: '《民法典》第1123条、第1127条', analysis: '继承开始后按照法定继承办理；有遗嘱的按照遗嘱继承或者遗赠办理。法定继承第一顺序为配偶子女父母，第二顺序为兄弟姐妹祖父母外祖父母。民法典新增打印遗嘱和录像遗嘱形式但须符合法定要件。' } },
+  { source: '新华日报', title: '见义勇为受伤能否要求受益人补偿', summary: '为保护他人权益而受伤的见义勇为者有权请求受益人给予适当补偿，民法典对此作出明确规定。', legalAnalysis: { law: '《民法典》第183条', analysis: '因保护他人民事权益使自己在受到损害的由侵权人承担民事责任受益人可以给予适当补偿。没有侵权人侵权人逃逸或者无力承担民事责任受害人请求补偿的受益人应当给予适当补偿。' } },
+  { source: '中国青年报', title: '不正当竞争：流量造假与刷单炒信的法律责任', summary: '电商平台商家通过刷单炒信制造虚假流量提升排名被认定为不正当竞争行为，面临行政处罚和民事赔偿。', legalAnalysis: { law: '《反不正当竞争法》第8条、第20条', analysis: '经营者不得对其商品的销售状况用户评价等作虚假或者引人误解的商业宣传欺骗误导消费者；经营者违反规定由监督检查部门责令停止违法行为处二十万元以上一百万元以下罚款情节严重的处一百万元以上二百万元以下罚款吊销营业执照。' } },
+];
+
+// ===== 播客视频池（20个B站学习视频，每日随机选1个，不重复） =====
+const PODCAST_VIDEO_POOL = [
+  { bvid: 'BV11o4y1s7VY', title: '我是如何快速学习一个领域的', author: '小Lin说', duration: '16:47', playCount: 3412000, cover: '', description: 'UP主小Lin结合自身从北大到哥大的学习经验，系统讲解结构化思维：多问为什么、时间线梳理、异常数据分析、流程化拆解，帮你快速建立新领域的知识框架。', recommendReason: '契合你关注的学习方法方向，小Lin说是B站百大UP主，该方法论视频播放量341万，信息密度高且实用。' },
+  { bvid: 'BV1GJ411x7h7', title: '【TED】如何掌控你的自由时间', author: 'TED君学演讲', duration: '11:32', playCount: 1280000, cover: '', description: '时间管理专家Laura Vanderkam指出我们不是通过节省时间来打造想要的生活，而是先创造想要的生活时间自然就省出来了。', recommendReason: '时间管理方向经典TED演讲，帮助你重新审视时间分配的优先级。' },
+  { bvid: 'BV1Hx411y7nH', title: '考研政治该怎么复习？学姐分享经验', author: '考研学长学姐', duration: '15:20', playCount: 890000, cover: '', description: '考研上岸学姐系统分享政治复习规划，从基础阶段到冲刺阶段的时间安排和资料选择，附答题技巧。', recommendReason: '考研经验方向，对你的考研准备有直接参考价值。' },
+  { bvid: 'BV1Kb411W7fK', title: '英语听力训练方法：影子跟读法', author: '英语老师Ella', duration: '12:45', playCount: 1560000, cover: '', description: '影子跟读法是提升英语听力最有效的方法之一，Ella老师详细讲解操作步骤和注意事项，附练习素材推荐。', recommendReason: '英语学习方向，影子跟读法被广泛验证有效，适合日常练习。' },
+  { bvid: 'BV1L4411A7dC', title: '科研入门：如何阅读和撰写学术论文', author: '博士学长', duration: '22:10', playCount: 670000, cover: '', description: '博士生系统讲解学术论文阅读方法：精读与泛读策略、文献管理工具使用、论文写作规范与投稿流程。', recommendReason: '科研入门方向，对了解学术研究方法和论文写作有系统指导。' },
+  { bvid: 'BV1Wb41177pE', title: '自律100天打卡：我是如何坚持的', author: '自律少女阿May', duration: '10:30', playCount: 980000, cover: '', description: 'UP主分享自律100天打卡的经历和方法，包括目标设定、习惯养成、应对拖延和失败调整策略。', recommendReason: '自律打卡方向，真实经历分享可作为你的习惯养成参考。' },
+  { bvid: 'BV1Sb411s7CP', title: '效率工具盘点：Notion/Obsidian/飞书', author: '效率达人', duration: '18:55', playCount: 1230000, cover: '', description: '深度对比三款主流效率工具的优缺点和适用场景，附使用技巧和模板分享，帮你选对工具提升效率。', recommendReason: '效率工具方向，工具选择是提升效率的第一步，值得借鉴。' },
+  { bvid: 'BV1dJ411W7fC', title: '读书方法分享：如何高效阅读一本书', author: '读书人小李', duration: '14:20', playCount: 760000, cover: '', description: '分享主题阅读法、SQ3R阅读法和番茄阅读法三种高效阅读方法，帮助你从书中获取更多价值。', recommendReason: '读书分享方向，阅读方法论对知识积累有长期价值。' },
+  { bvid: 'BV1HJ41157k7', title: '费曼学习法：最强学习技巧详解', author: '学习区UP主', duration: '09:15', playCount: 2100000, cover: '', description: '费曼学习法核心是用简单的语言向他人解释复杂的概念。视频详解四个步骤和实际应用案例。', recommendReason: '学习方法方向，费曼学习法被公认为最有效的学习技巧之一。' },
+  { bvid: 'BV1Tb411W7fC', title: '考研英语阅读理解技巧大全', author: '考研英语老师', duration: '25:30', playCount: 1450000, cover: '', description: '系统讲解考研英语阅读理解的六大题型和解题技巧，附真题分析和练习方法。', recommendReason: '考研方向，阅读理解是考研英语的拉分关键。' },
+  { bvid: 'BV1YJ411s7dC', title: '记笔记的正确方法：康奈尔笔记法', author: '学习博主', duration: '08:45', playCount: 1340000, cover: '', description: '康奈尔笔记法是全球公认的高效笔记方法，视频详解笔记区域划分、记录要点和复习流程。', recommendReason: '学习方法方向，笔记是知识管理的基础，康奈尔法简单实用。' },
+  { bvid: 'BV1pb41177pK', title: '如何克服拖延症：心理学视角', author: '心理学长', duration: '13:50', playCount: 1670000, cover: '', description: '从心理学角度分析拖延症成因，提供认知行为疗法、番茄工作法、环境设计等实用策略。', recommendReason: '自律方向，克服拖延是提升学习效率的关键一步。' },
+  { bvid: 'BV1WJ411x7h7', title: '英语口语提升：每日跟读练习指南', author: '口语教练Tom', duration: '11:20', playCount: 890000, cover: '', description: '口语教练Tom分享每日15分钟跟读练习计划，从发音纠正到语调训练，附免费练习素材。', recommendReason: '英语学习方向，口语提升需要每日坚持，方法指导很重要。' },
+  { bvid: 'BV1Kx411y7dH', title: '思维导图使用指南：从入门到精通', author: '知识管理达人', duration: '16:30', playCount: 1100000, cover: '', description: '系统讲解思维导图的原理和制作方法，涵盖XMind、幕布等工具使用，附学习和工作中的实际应用案例。', recommendReason: '效率方法方向，思维导图是整理思路和知识结构的利器。' },
+  { bvid: 'BV1Sx411y7nC', title: '大学四年如何规划才不后悔', author: '学长说', duration: '19:45', playCount: 2340000, cover: '', description: '毕业学长分享大学四年规划经验：大一探索、大二聚焦、大三深耕、大四冲刺，涵盖学业、实习、竞赛、考研。', recommendReason: '学习规划方向，适合大学生系统规划大学生活。' },
+  { bvid: 'BV1Hb411W7dP', title: '番茄工作法详解：如何专注25分钟', author: '效率工具控', duration: '07:30', playCount: 1560000, cover: '', description: '番茄工作法是最简单有效的时间管理方法，视频详解操作步骤、常见误区和进阶技巧。', recommendReason: '效率方法方向，番茄法简单易行，适合立刻开始实践。' },
+  { bvid: 'BV1Yx411A7dK', title: '深度工作：如何在分心时代保持专注', author: '读书博主', duration: '20:15', playCount: 980000, cover: '', description: '基于卡尔·纽波特的《深度工作》一书，分享在社交媒体时代培养深度专注力的四大策略和日常实践方法。', recommendReason: '学习方法方向，深度工作是高效率学习的核心能力。' },
+  { bvid: 'BV1pb411s7CK', title: '英语写作提升：从句子到段落', author: '写作老师Emily', duration: '17:40', playCount: 670000, cover: '', description: 'Emily老师从句子结构到段落展开，系统讲解英语写作的核心技巧，附常见错误分析和修改示范。', recommendReason: '英语学习方向，写作是英语综合能力的体现。' },
+  { bvid: 'BV1Wb411x7hP', title: '记忆法训练：宫殿记忆法入门', author: '记忆达人', duration: '12:55', playCount: 1890000, cover: '', description: '宫殿记忆法是世界记忆冠军的常用技巧，视频从原理讲解到实操训练，帮你打造超强记忆力。', recommendReason: '学习方法方向，记忆是学习的基础，宫殿法效果显著。' },
+  { bvid: 'BV1dx411W7fC', title: '复盘方法论：如何从经验中学习', author: '成长博主', duration: '14:10', playCount: 760000, cover: '', description: '复盘是个人成长的核心方法，视频详解GRAI复盘法（回顾目标、评估结果、分析原因、总结规律），附复盘模板。', recommendReason: '效率方法方向，复盘习惯对持续进步至关重要。' },
+];
+
 // ===== 降级数据（无后端时使用） =====
 const FALLBACK_DATA = {
   music: {
@@ -90,28 +148,97 @@ const FALLBACK_DATA = {
   },
 };
 
-// 客户端音乐推荐选取（不与昨天重复）
-function clientSideMusicRecommendation() {
+// ===== 客户端每日选取系统（不依赖后端，localStorage记录历史，不与之前所有推荐重复） =====
+
+// 通用：从池中按日期选取，排除历史记录，池耗尽时自动重置
+function dailySelect(pool, historyKey, idField, count, date) {
+  const today = date || todayStr();
+  const cacheKey = historyKey + '-cache';
+  const cached = JSON.parse(localStorage.getItem(cacheKey) || '{}');
+  // 如果今天已经选过了，直接返回缓存
+  if (cached.date === today && cached.selection) {
+    return cached.selection;
+  }
+
+  // 读取历史记录
+  let history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+
+  // 从池中排除已推荐过的
+  let candidates = pool.filter(item => !history.includes(item[idField]));
+  // 如果排除后不够选，清空历史重新开始
+  if (candidates.length < count) {
+    history = [];
+    candidates = [...pool];
+  }
+
+  // 随机选取
+  const selected = [];
+  const tempPool = [...candidates];
+  for (let i = 0; i < count && tempPool.length > 0; i++) {
+    const idx = Math.floor(Math.random() * tempPool.length);
+    selected.push(tempPool[idx]);
+    tempPool.splice(idx, 1);
+  }
+
+  // 更新历史
+  selected.forEach(item => {
+    if (!history.includes(item[idField])) history.push(item[idField]);
+  });
+  localStorage.setItem(historyKey, JSON.stringify(history));
+
+  // 缓存今天的选择（同一天内不变）
+  localStorage.setItem(cacheKey, JSON.stringify({ date: today, selection: selected }));
+
+  return selected;
+}
+
+// 法律：每日选3篇，不与历史重复
+function clientSideLawSelection() {
+  const selected = dailySelect(LAW_ARTICLE_POOL, 'weili-law-history', 'title', 3);
   const today = todayStr();
-  const stored = JSON.parse(localStorage.getItem('weili-music-rec') || '{}');
-  if (stored.date === today && stored.recommendation) {
-    return { recommendation: stored.recommendation, totalVideos: MUSIC_VIDEO_POOL.length };
-  }
-  // 昨天的bvid
-  const yesterdayBvid = stored.recommendation ? stored.recommendation.bvid : null;
-  let candidates = MUSIC_VIDEO_POOL;
-  if (yesterdayBvid && candidates.length > 1) {
-    candidates = candidates.filter(v => v.bvid !== yesterdayBvid);
-  }
-  const selected = candidates[Math.floor(Math.random() * candidates.length)];
+  return {
+    items: selected.map((item, idx) => ({
+      id: idx + 1,
+      source: item.source,
+      date: today.slice(5),
+      title: item.title,
+      summary: item.summary,
+      legalAnalysis: item.legalAnalysis,
+      url: baiduSearchUrl(item.title),
+    })),
+  };
+}
+
+// 播客：每日选1个视频，不与历史重复
+function clientSidePodcastSelection() {
+  const selected = dailySelect(PODCAST_VIDEO_POOL, 'weili-podcast-history', 'bvid', 1);
+  const v = selected[0];
+  const today = todayStr();
+  return {
+    source: '哔哩哔哩',
+    author: v.author,
+    date: today.slice(5),
+    title: v.title,
+    description: v.description,
+    duration: v.duration,
+    playCount: v.playCount,
+    cover: v.cover || '',
+    url: 'https://www.bilibili.com/video/' + v.bvid,
+    recommendReason: v.recommendReason,
+  };
+}
+
+// 音乐推荐：每日选1个视频，不与历史重复
+function clientSideMusicRecommendation() {
+  const selected = dailySelect(MUSIC_VIDEO_POOL, 'weili-music-history', 'bvid', 1);
+  const v = selected[0];
   const rec = {
-    title: selected.title, bvid: selected.bvid,
-    url: 'https://www.bilibili.com/video/' + selected.bvid,
-    cover: selected.cover, duration: selected.duration, play: selected.play,
+    title: v.title, bvid: v.bvid,
+    url: 'https://www.bilibili.com/video/' + v.bvid,
+    cover: v.cover, duration: v.duration, play: v.play,
     author: 'JLRS-LeoFM', authorUrl: 'https://space.bilibili.com/3493093607213343',
     source: 'B站',
   };
-  localStorage.setItem('weili-music-rec', JSON.stringify({ date: today, recommendation: rec }));
   return { recommendation: rec, totalVideos: MUSIC_VIDEO_POOL.length };
 }
 
@@ -1123,25 +1250,11 @@ function loadPageData(page) {
   }
 }
 
+// 法律：客户端每日选取3篇，不与历史重复（不依赖Vercel API，因Vercel无法持久化状态）
 async function fetchLaw() {
-  try {
-    const resp = await fetch('/api/law');
-    if (!resp.ok) throw new Error('API unavailable');
-    const data = await resp.json();
-    // 把所有法律文章链接统一改为百度搜索链接，确保手机端可打开
-    if (data && data.items) {
-      data.items = data.items.map(item => ({
-        ...item,
-        url: baiduSearchUrl(item.title),
-      }));
-    }
-    state.data.law = data;
-    renderLaw(data);
-  } catch (err) {
-    // 降级：使用内置数据
-    state.data.law = FALLBACK_DATA.law;
-    renderLaw(FALLBACK_DATA.law);
-  }
+  const data = clientSideLawSelection();
+  state.data.law = data;
+  renderLaw(data);
 }
 
 // 生成百度搜索链接（永远可用）
@@ -1254,33 +1367,18 @@ async function fetchMusic() {
   }
 }
 
+// 音乐推荐：客户端每日选取1个JLRS-LeoFM视频，不与历史重复
 async function fetchMusicRecommendation() {
-  try {
-    const resp = await fetch('/api/music-recommendation');
-    if (!resp.ok) throw new Error('API unavailable');
-    const data = await resp.json();
-    state.data.musicRecommendation = data;
-    renderMusicRecommendation(data);
-  } catch (err) {
-    // 降级：客户端本地选取（不与昨天重复）
-    const data = clientSideMusicRecommendation();
-    state.data.musicRecommendation = data;
-    renderMusicRecommendation(data);
-  }
+  const data = clientSideMusicRecommendation();
+  state.data.musicRecommendation = data;
+  renderMusicRecommendation(data);
 }
 
+// 播客：客户端每日选取1个B站学习视频，不与历史重复
 async function fetchPodcast() {
-  try {
-    const resp = await fetch('/api/podcast');
-    if (!resp.ok) throw new Error('API unavailable');
-    const data = await resp.json();
-    state.data.podcast = data;
-    renderPodcast(data);
-  } catch (err) {
-    // 降级：使用内置数据
-    state.data.podcast = FALLBACK_DATA.podcast;
-    renderPodcast(FALLBACK_DATA.podcast);
-  }
+  const data = clientSidePodcastSelection();
+  state.data.podcast = data;
+  renderPodcast(data);
 }
 
 // ===== 渲染内容 =====
